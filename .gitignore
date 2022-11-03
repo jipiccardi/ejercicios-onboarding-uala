@@ -13,3 +13,6 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+ejercicio-aws/lambda/insert-contacto-lambda/main
+ejercicio-aws/lambda/insert-contacto-lambda/main.zip

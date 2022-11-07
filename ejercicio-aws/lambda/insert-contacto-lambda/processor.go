@@ -17,7 +17,7 @@ type Contact struct {
 	Status    string `dynamodbav:"status"`
 }
 
-func Process(ctx context.Context, req InsertContactoRequest) error {
+func Process(ctx context.Context, req InsertContactoRequest) (string, error) {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
@@ -31,7 +31,7 @@ func Process(ctx context.Context, req InsertContactoRequest) error {
 	}
 	putItem, err := dynamodbattribute.MarshalMap(item)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	input := &dynamodb.PutItemInput{
@@ -41,8 +41,8 @@ func Process(ctx context.Context, req InsertContactoRequest) error {
 
 	_, err = svc.PutItem(input)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return item.Id, nil
 }

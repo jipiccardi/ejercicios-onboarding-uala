@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 )
 
@@ -14,37 +15,56 @@ type InsertContactoRequest struct {
 	Status    string `json:"status"`
 }
 
-func HandleRequest(ctx context.Context, payload json.RawMessage) error {
-	// Validaciones (validar campos que tienen que venir. El id ya lo valida DynamoDB)
+type InsertContactoResponse struct {
+	Message string `json:"message"`
+}
+
+type ErrorMessage struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+}
+
+func HandleRequest(ctx context.Context, payload json.RawMessage) (InsertContactoResponse, error) {
+
 	req := InsertContactoRequest{}
+
 	if err := json.Unmarshal(payload, &req); err != nil {
 		log.Printf("ERR: %s\n", err.Error())
-		return err
+		return InsertContactoResponse{}, err
 	}
 
 	if err := req.Validate(); err != nil {
 		log.Printf("ERR: %s\n", err.Error())
-		return err
+		return InsertContactoResponse{}, err
 	}
 
-	// Pegar en la base (processor)
-	err := Process(ctx, req)
+	id, err := Process(ctx, req)
 	if err != nil {
 		log.Printf("ERR: %s\n", err)
-		return err
+		return InsertContactoResponse{}, err
 	}
 
-	log.Printf("Contact succesfully inserted")
-	return nil
+	log.Printf("Contact succesfully inserted with id: %s", id)
+
+	return InsertContactoResponse{Message: fmt.Sprintf("Contact succesfully inserted with id: %s", id)}, nil
 }
 
 func (r *InsertContactoRequest) Validate() error {
+	var errMsg ErrorMessage
+	errMsg.Status = 400
+
 	if r.FirstName == "" {
-		return errors.New("wrong payload: missing firstName field")
+		errMsg.Message = "wrong payload: missing firstName field"
 	}
 
 	if r.LastName == "" {
-		return errors.New("wrong payload: missing lastName field")
+		errMsg.Message = "wrong payload: missing lastName field"
 	}
+
+	if len(errMsg.Message) != 0 {
+		byteErrMsg, _ := json.Marshal(errMsg)
+		return errors.New(string(byteErrMsg))
+	}
+
 	return nil
 }

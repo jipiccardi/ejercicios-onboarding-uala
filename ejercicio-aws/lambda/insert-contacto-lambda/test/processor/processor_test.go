@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/jipiccardi/ejercicios-onboarding-uala/ejercicio-aws/lambda/insert-contacto-lambda/pkg/dto"
@@ -35,6 +36,18 @@ func Test_Process(t *testing.T) {
 				in.On("PostContacto", dto.Contacto{}).Return(nil)
 			},
 			wantErr:   assert.NoError,
+			wantValue: assert.NotNil,
+		},
+		{
+			name: "error path: error in DynamoDB",
+			args: args{
+				req: dto.InsertContactoRequest{},
+			},
+			mock: mocks.Mock{},
+			init: func(in *mocks.Mock) {
+				in.On("PostContacto", dto.Contacto{}).Return(errors.New("DynamoDB error"))
+			},
+			wantErr:   assert.Error,
 			wantValue: assert.NotNil,
 		},
 	}

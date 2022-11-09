@@ -32,7 +32,11 @@ func (m *Mock) Process(req dto.InsertContactoRequest) (string, error) {
 }
 
 func (m *Mock) PostContacto(contacto dto.Contacto) error {
-	// Devuelvo sin error ya que si quiero usar m.called tengo el problema de que lo que se le pasa a PostContacto se
-	// define adentro de Process y al no coincidir cuando uso in.On tira un error. Investigar
+	// TODO: entender como hacer aca para poder pasasrle contacto y que no tire panic teniendo
+	// en cuenta que en la funcion real los campos de contacto van a ser diferentes.
+	args := m.Called(dto.Contacto{})
+	if args.Get(0) != nil {
+		return args.Error(0)
+	}
 	return nil
 }

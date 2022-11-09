@@ -3,10 +3,19 @@ package processor
 import (
 	"github.com/google/uuid"
 	"github.com/jipiccardi/ejercicios-onboarding-uala/ejercicio-aws/lambda/insert-contacto-lambda/pkg/dto"
-	"github.com/jipiccardi/ejercicios-onboarding-uala/ejercicio-aws/lambda/insert-contacto-lambda/pkg/external"
 )
 
-func Process(req dto.InsertContactoRequest) (string, error) {
+type Processor struct {
+	DynamoClient dto.DynamoClient
+}
+
+func New(client dto.DynamoClient) *Processor {
+	return &Processor{
+		DynamoClient: client,
+	}
+}
+
+func (p *Processor) Process(req dto.InsertContactoRequest) (string, error) {
 	item := dto.Contacto{
 		Id:        uuid.New().String(),
 		FirstName: req.FirstName,
@@ -14,7 +23,7 @@ func Process(req dto.InsertContactoRequest) (string, error) {
 		Status:    "CREATED",
 	}
 
-	err := external.PostContacto(item)
+	err := p.DynamoClient.PostContacto(item)
 	if err != nil {
 		return "", err
 	}

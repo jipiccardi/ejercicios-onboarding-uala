@@ -6,10 +6,19 @@ import (
 	"fmt"
 
 	"github.com/jipiccardi/ejercicios-onboarding-uala/ejercicio-aws/lambda/insert-contacto-lambda/pkg/dto"
-	"github.com/jipiccardi/ejercicios-onboarding-uala/ejercicio-aws/lambda/insert-contacto-lambda/pkg/processor"
 )
 
-func HandleRequest(ctx context.Context, payload json.RawMessage) (dto.InsertContactoResponse, error) {
+type Handler struct {
+	processor dto.Processor
+}
+
+func New(in dto.Processor) *Handler {
+	return &Handler{
+		processor: in,
+	}
+}
+
+func (h *Handler) HandleRequest(ctx context.Context, payload json.RawMessage) (dto.InsertContactoResponse, error) {
 
 	req := dto.InsertContactoRequest{}
 
@@ -23,13 +32,13 @@ func HandleRequest(ctx context.Context, payload json.RawMessage) (dto.InsertCont
 		return dto.InsertContactoResponse{}, err
 	}
 
-	id, err := processor.Process(req)
+	id, err := h.processor.Process(req)
 	if err != nil {
 		fmt.Printf("ERR: %s\n", err)
 		return dto.InsertContactoResponse{}, err
 	}
 
-	fmt.Printf("Contact succesfully inserted with id: %s", id)
+	fmt.Printf("Contact succesfully inserted with id: %s\n", id)
 
 	return dto.InsertContactoResponse{Message: fmt.Sprintf("Contact succesfully inserted with id: %s", id)}, nil
 }

@@ -8,7 +8,10 @@ import (
 	"github.com/jipiccardi/ejercicios-onboarding-uala/ejercicio-aws/lambda/insert-contacto-lambda/pkg/dto"
 )
 
-func PostContacto(contacto dto.Contacto) error {
+type DynamoClient struct {
+}
+
+func (c *DynamoClient) PostContacto(contacto dto.Contacto) error {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))

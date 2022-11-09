@@ -48,6 +48,45 @@ func Test_HandleRequest(t *testing.T) {
 			wantValue: assert.NotNil,
 			wantErr:   assert.NoError,
 		},
+		{
+			name: "error path: missing field",
+			args: args{
+				ctx: mocks.Context(),
+				payload: json.RawMessage(
+					`
+					{
+						"firstName": "first-name"
+					}
+					`,
+				),
+			},
+			mock: mocks.Mock{},
+			init: func(in *mocks.Mock) {
+				in.On("Process", dto.InsertContactoRequest{}).Return("id1234", nil)
+			},
+			wantValue: assert.NotNil,
+			wantErr:   assert.Error,
+		},
+		{
+			name: "error path: wrong field type",
+			args: args{
+				ctx: mocks.Context(),
+				payload: json.RawMessage(
+					`
+					{
+						"firstName": "first-name",
+						"lastName": 324
+					}
+					`,
+				),
+			},
+			mock: mocks.Mock{},
+			init: func(in *mocks.Mock) {
+				in.On("Process", dto.InsertContactoRequest{}).Return("id1234", nil)
+			},
+			wantValue: assert.NotNil,
+			wantErr:   assert.Error,
+		},
 	}
 
 	for _, tt := range tests {
@@ -55,7 +94,8 @@ func Test_HandleRequest(t *testing.T) {
 			tt.name,
 			func(t *testing.T) {
 				tt.init(&tt.mock)
-				res, err := handler.HandleRequest(tt.args.ctx, tt.args.payload)
+				h := handler.New(&tt.mock)
+				res, err := h.HandleRequest(tt.args.ctx, tt.args.payload)
 				tt.wantErr(t, err)
 				tt.wantValue(t, res)
 			},

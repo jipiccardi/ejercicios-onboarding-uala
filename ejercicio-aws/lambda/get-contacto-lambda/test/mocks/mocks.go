@@ -30,3 +30,11 @@ func (m *Mock) Process(id string) (dto.GetContactoResponse, error) {
 	}
 	return args.Get(0).(dto.GetContactoResponse), nil
 }
+
+func (m *Mock) GetContactoById(id string, contact *dto.GetContactoResponse) error {
+	args := m.Called(id, contact)
+	if args.Get(0) != nil {
+		return args.Error(0)
+	}
+	return nil
+}

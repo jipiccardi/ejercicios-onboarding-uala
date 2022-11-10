@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"testing"
 
 	"github.com/jipiccardi/ejercicios-onboarding-uala/ejercicio-aws/lambda/insert-contacto-lambda/pkg/dto"
@@ -60,10 +61,8 @@ func Test_HandleRequest(t *testing.T) {
 					`,
 				),
 			},
-			mock: mocks.Mock{},
-			init: func(in *mocks.Mock) {
-				in.On("Process", dto.InsertContactoRequest{}).Return("id1234", nil)
-			},
+			mock:      mocks.Mock{},
+			init:      func(in *mocks.Mock) {},
 			wantValue: assert.NotNil,
 			wantErr:   assert.Error,
 		},
@@ -80,9 +79,30 @@ func Test_HandleRequest(t *testing.T) {
 					`,
 				),
 			},
+			mock:      mocks.Mock{},
+			init:      func(in *mocks.Mock) {},
+			wantValue: assert.NotNil,
+			wantErr:   assert.Error,
+		},
+		{
+			name: "error path: internal server error: process failed",
+			args: args{
+				ctx: mocks.Context(),
+				payload: json.RawMessage(
+					`
+					{
+						"firstName": "first-name",
+						"lastName": "last-name"
+					}
+					`,
+				),
+			},
 			mock: mocks.Mock{},
 			init: func(in *mocks.Mock) {
-				in.On("Process", dto.InsertContactoRequest{}).Return("id1234", nil)
+				in.On("Process", dto.InsertContactoRequest{
+					FirstName: "first-name",
+					LastName:  "last-name",
+				}).Return("", errors.New("internal server error"))
 			},
 			wantValue: assert.NotNil,
 			wantErr:   assert.Error,

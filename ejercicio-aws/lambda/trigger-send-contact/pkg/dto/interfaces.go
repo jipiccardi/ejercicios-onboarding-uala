@@ -7,9 +7,14 @@ import (
 )
 
 type Processor interface {
+	Process(context.Context, string) error
 }
 
-type SNSPublishClient interface {
+type SnsClient interface {
+	PublishMessage(context.Context, string, string) (*sns.PublishOutput, error)
+}
+
+type SNSPublishAPI interface {
 	Publish(ctx context.Context,
 		params *sns.PublishInput,
 		optFns ...func(*sns.Options)) (*sns.PublishOutput, error)

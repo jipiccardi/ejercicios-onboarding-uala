@@ -24,9 +24,12 @@ func (h *Handler) HandleRequest(ctx context.Context, e events.DynamoDBEvent) {
 		fmt.Printf("Processing request data for event ID %s, type %s.\n", record.EventID, record.EventName)
 
 		id := record.Change.NewImage["id"].String()
-		firstName := record.Change.NewImage["firstName"].String()
-		lastName := record.Change.NewImage["lastName"].String()
+		// firstName := record.Change.NewImage["firstName"].String()
+		// lastName := record.Change.NewImage["lastName"].String()
 
-		fmt.Printf("contact id: %s, firstName: %s, lastName: %s\n", id, firstName, lastName)
+		err := h.processor.Process(ctx, id)
+		if err != nil {
+			fmt.Printf("ERR: errror in handler: %s\n", err)
+		}
 	}
 }

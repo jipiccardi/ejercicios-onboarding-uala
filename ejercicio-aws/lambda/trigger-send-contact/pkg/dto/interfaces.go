@@ -1,21 +1,13 @@
 package dto
 
 import (
-	"context"
-
-	"github.com/aws/aws-sdk-go-v2/service/sns"
+	"github.com/aws/aws-sdk-go/service/sns"
 )
 
 type Processor interface {
-	Process(context.Context, string) error
+	Process(Contacto) error
 }
 
 type SnsClient interface {
-	PublishMessage(context.Context, string, string) (*sns.PublishOutput, error)
-}
-
-type SNSPublishAPI interface {
-	Publish(ctx context.Context,
-		params *sns.PublishInput,
-		optFns ...func(*sns.Options)) (*sns.PublishOutput, error)
+	PublishMessage(Contacto) (*sns.PublishOutput, error)
 }

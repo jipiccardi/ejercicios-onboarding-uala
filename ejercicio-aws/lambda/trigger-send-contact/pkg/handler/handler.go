@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -18,18 +19,30 @@ func New(in dto.Processor) *Handler {
 	}
 }
 
-func (h *Handler) HandleRequest(ctx context.Context, e events.DynamoDBEvent) {
+func (h *Handler) HandleRequest(ctx context.Context, e events.DynamoDBEvent) error {
+	errorExist := false
 
 	for _, record := range e.Records {
 		fmt.Printf("Processing request data for event ID %s, type %s.\n", record.EventID, record.EventName)
 
 		id := record.Change.NewImage["id"].String()
-		// firstName := record.Change.NewImage["firstName"].String()
-		// lastName := record.Change.NewImage["lastName"].String()
+		firstName := record.Change.NewImage["firstName"].String()
+		lastName := record.Change.NewImage["lastName"].String()
 
-		err := h.processor.Process(ctx, id)
+		err := h.processor.Process(dto.Contacto{
+			Id:        id,
+			FirstName: firstName,
+			LastName:  lastName,
+		})
+
 		if err != nil {
-			fmt.Printf("ERR: errror in handler: %s\n", err)
+			errorExist = true
 		}
+
 	}
+
+	if errorExist {
+		return errors.New("error processing some record")
+	}
+	return nil
 }

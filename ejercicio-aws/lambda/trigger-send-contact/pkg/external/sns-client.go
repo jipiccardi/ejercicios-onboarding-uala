@@ -1,28 +1,48 @@
 package external
 
 import (
-	"context"
+	"encoding/json"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/sns"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/jipiccardi/ejercicios-onboarding-uala/ejercicio-aws/lambda/trigger-send-contact/pkg/dto"
 )
 
 type SnsClient struct {
-	Api dto.SNSPublishAPI
+	Api      snsiface.SNSAPI
+	TopicARN string
 }
 
-func (s *SnsClient) PublishMessage(ctx context.Context, message string, topic string) (*sns.PublishOutput, error) {
+func InitSnsClient(topicName string) SnsClient {
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+	return SnsClient{
+		Api:      sns.New(sess),
+		TopicARN: topicName,
+	}
+}
+
+func (s *SnsClient) PublishMessage(message dto.Contacto) (*sns.PublishOutput, error) {
+	var publishResult *sns.PublishOutput
+
+	byteMsg, err := json.Marshal(message)
+	if err != nil {
+		return publishResult, err
+	}
 
 	input := &sns.PublishInput{
-		Message:  aws.String(message),
-		TopicArn: aws.String(topic),
+		Message:  aws.String(string(byteMsg)),
+		TopicArn: aws.String(s.TopicARN),
 	}
 
-	result, err := s.Api.Publish(ctx, input)
+	publishResult, err = s.Api.Publish(input)
 	if err != nil {
-		return result, err
+		return publishResult, err
 	}
 
-	return result, nil
+	return publishResult, err
 }

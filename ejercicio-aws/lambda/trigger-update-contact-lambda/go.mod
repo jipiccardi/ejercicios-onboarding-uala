@@ -5,7 +5,6 @@ go 1.19
 require (
 	github.com/aws/aws-lambda-go v1.34.1
 	github.com/aws/aws-sdk-go v1.44.136
-	github.com/jipiccardi/ejercicios-onboarding-uala/ejercicio-aws/lambda/trigger-send-contact v0.0.0-20221114154041-77575ae548f8
 	github.com/stretchr/testify v1.7.2
 )
 

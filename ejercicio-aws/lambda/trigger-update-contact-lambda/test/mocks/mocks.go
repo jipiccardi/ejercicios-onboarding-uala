@@ -2,11 +2,8 @@ package mocks
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-lambda-go/lambdacontext"
-	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/jipiccardi/ejercicios-onboarding-uala/ejercicio-aws/lambda/trigger-send-contact/pkg/dto"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -25,19 +22,18 @@ func Context() context.Context {
 	return lambdacontext.NewContext(context.TODO(), ctx)
 }
 
-func (m *Mock) Process(contacto dto.Contacto) error {
-	args := m.Called(contacto)
-	if err := args.Get(1); err != nil {
-		fmt.Printf("%+v\n", err)
+func (m *Mock) Process(id string) error {
+	args := m.Called(id)
+	if err := args.Get(0); err != nil {
 		return err.(error)
 	}
 	return nil
 }
 
-func (m *Mock) PublishMessage(message dto.Contacto) (*sns.PublishOutput, error) {
-	args := m.Called(message)
-	if args.Get(1) != nil {
-		return &sns.PublishOutput{}, args.Error(1)
+func (m *Mock) UpdateStatus(id string, status string) error {
+	args := m.Called(id, "PROCESSED")
+	if err := args.Get(0); err != nil {
+		return err.(error)
 	}
-	return args.Get(0).(*sns.PublishOutput), nil
+	return nil
 }

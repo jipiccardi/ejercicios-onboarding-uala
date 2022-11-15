@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -17,6 +18,17 @@ func Test_HandleRequest(t *testing.T) {
 		e   events.DynamoDBEvent
 	}
 
+	happyPathInput := map[string]events.DynamoDBAttributeValue{
+		"id":        events.NewStringAttribute("id1234"),
+		"firstName": events.NewStringAttribute("first-name"),
+		"lastName":  events.NewStringAttribute("last-name"),
+	}
+	missingIDInput := map[string]events.DynamoDBAttributeValue{
+		"id":        events.NewStringAttribute(""),
+		"firstName": events.NewStringAttribute("first-name"),
+		"lastName":  events.NewStringAttribute("last-name"),
+	}
+
 	tests := []struct {
 		name    string
 		args    args
@@ -26,8 +38,18 @@ func Test_HandleRequest(t *testing.T) {
 	}{
 		{
 			name: "happy path",
-			args: args{},
-			// TODO: ver como en args pasar el events.DynamoDBEvent.
+			args: args{
+				ctx: mocks.Context(),
+				e: events.DynamoDBEvent{
+					Records: []events.DynamoDBEventRecord{
+						{
+							Change: events.DynamoDBStreamRecord{
+								NewImage: happyPathInput,
+							},
+						},
+					},
+				},
+			},
 			mock: mocks.Mock{},
 			init: func(in *mocks.Mock) {
 				in.On("Process", dto.Contacto{
@@ -37,6 +59,48 @@ func Test_HandleRequest(t *testing.T) {
 				}).Return("id1234", nil)
 			},
 			wantErr: assert.NoError,
+		},
+		{
+			name: "error path: process failed",
+			args: args{
+				ctx: mocks.Context(),
+				e: events.DynamoDBEvent{
+					Records: []events.DynamoDBEventRecord{
+						{
+							Change: events.DynamoDBStreamRecord{
+								NewImage: happyPathInput,
+							},
+						},
+					},
+				},
+			},
+			mock: mocks.Mock{},
+			init: func(in *mocks.Mock) {
+				in.On("Process", dto.Contacto{
+					Id:        "id1234",
+					FirstName: "first-name",
+					LastName:  "last-name",
+				}).Return("", errors.New("internal server error"))
+			},
+			wantErr: assert.Error,
+		},
+		{
+			name: "error path: missing id",
+			args: args{
+				ctx: mocks.Context(),
+				e: events.DynamoDBEvent{
+					Records: []events.DynamoDBEventRecord{
+						{
+							Change: events.DynamoDBStreamRecord{
+								NewImage: missingIDInput,
+							},
+						},
+					},
+				},
+			},
+			mock:    mocks.Mock{},
+			init:    func(in *mocks.Mock) {},
+			wantErr: assert.Error,
 		},
 	}
 

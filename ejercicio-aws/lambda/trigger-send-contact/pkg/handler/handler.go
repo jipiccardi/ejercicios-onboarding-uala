@@ -26,6 +26,11 @@ func (h *Handler) HandleRequest(ctx context.Context, e events.DynamoDBEvent) err
 	for _, record := range e.Records {
 		fmt.Printf("Processing request data for event ID %s, type %s.\n", record.EventID, record.EventName)
 
+		// En caso de que se modifica el usuario, no hace nada.
+		if record.EventName == "MODIFY" {
+			continue
+		}
+
 		id := record.Change.NewImage["id"].String()
 		firstName := record.Change.NewImage["firstName"].String()
 		lastName := record.Change.NewImage["lastName"].String()

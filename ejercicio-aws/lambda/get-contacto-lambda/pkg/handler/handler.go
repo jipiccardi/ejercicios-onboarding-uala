@@ -19,7 +19,7 @@ func New(in dto.Processor) *Handler {
 	}
 }
 
-func (h *Handler) HandleRequest(ctx context.Context, payload json.RawMessage) (dto.GetContactoResponse, error) {
+func (h *Handler) HandleRequest(_ context.Context, payload json.RawMessage) (dto.GetContactoResponse, error) {
 	req := dto.GetContactoRequest{}
 
 	if err := json.Unmarshal(payload, &req); err != nil {

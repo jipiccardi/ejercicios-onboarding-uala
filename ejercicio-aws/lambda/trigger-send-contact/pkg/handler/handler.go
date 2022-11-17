@@ -20,7 +20,7 @@ func New(in dto.Processor) *Handler {
 }
 
 // TODO: se podria mejorar para que avise en que registro hubo error y en cuales no.
-func (h *Handler) HandleRequest(ctx context.Context, e events.DynamoDBEvent) error {
+func (h *Handler) HandleRequest(_ context.Context, e events.DynamoDBEvent) error {
 	errorExist := false
 
 	for _, record := range e.Records {
